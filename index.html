@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Comandos GPS Multi-Protocolo (15 Protocolos)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* --- ESTILOS PADRÃO: DARK MODE --- */
+        body {
+            background-color: #212529; /* Fundo Escuro */
+            color: #f8f9fa; /* Texto principal Branco Suave */
+            transition: background-color 0.3s, color 0.3s; /* Transição suave */
+        }
+        .container {
+            max-width: 900px;
+            padding-top: 30px;
+            padding-bottom: 30px;
+        }
+        /* Painel principal decorado */
+        .main-panel {
+            background-color: #343a40; /* Fundo do Painel */
+            border: 1px solid #495057;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        /* Comandos para copiar */
+        .comando-box {
+            background-color: #495057; /* Fundo cinza suave para o comando */
+            color: #f8f9fa; 
+            padding: 12px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.3s;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            border: 1px dashed #6c757d;
+        }
+        .comando-box:hover {
+            background-color: #6c757d;
+        }
+        /* Cor dos cabeçalhos dos cards (Azul principal) */
+        .card-header-custom {
+            background-color: #0d6efd;
+            color: white;
+        }
+        /* Estilo dos Cards em geral */
+        .card {
+            border: 1px solid #495057;
+            background-color: #343a40;
+            color: #f8f9fa;
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+        }
+        /* Campos de Formulário */
+        .form-control, .form-select, .form-control:focus, .form-select:focus {
+            background-color: #495057;
+            color: #f8f9fa;
+            border-color: #6c757d;
+        }
+        .form-control::placeholder {
+            color: #adb5bd;
+        }
+        .reference-list li strong {
+            color: #0d6efd;
+        }
+        /* Destaque para cards de dicas (Azul Ciano) */
+        .tip-card {
+            border-left: 5px solid #17a2b8; 
+        }
+        .tip-card .card-header {
+            background-color: #17a2b8 !important;
+        }
+
+        /* --- ESTILOS LIGHT MODE (ATENÇÃO: Reversão de Cores) --- */
+        body.light-mode {
+            background-color: #e9ecef; /* Fundo Cinza Claro */
+            color: #212529; /* Texto Preto */
+        }
+        body.light-mode .main-panel,
+        body.light-mode .card {
+            background-color: white; 
+            border: 1px solid #ced4da;
+            color: #212529;
+        }
+        body.light-mode .comando-box {
+            background-color: #f1f3f5; /* Fundo cinza suave para o comando */
+            color: #212529;
+            border: 1px dashed #ced4da;
+        }
+        body.light-mode .comando-box:hover {
+            background-color: #dee2e6;
+        }
+        body.light-mode .form-control, 
+        body.light-mode .form-select,
+        body.light-mode .form-control:focus, 
+        body.light-mode .form-select:focus {
+            background-color: white;
+            color: #212529;
+            border-color: #ced4da;
+        }
+        body.light-mode .text-muted {
+            color: #6c757d !important;
+        }
+        body.light-mode .tip-card {
+            border-left: 5px solid #17a2b8; 
+        }
+        
+        /* --- ESTILO DO BOTÃO DE ALTERNÂNCIA --- */
+        #modeToggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            cursor: pointer;
+            font-size: 1.5rem;
+            border: none;
+            background: none;
+            color: #f8f9fa; /* Cor do ícone no Dark Mode */
+            transition: color 0.3s;
+        }
+        body.light-mode #modeToggle {
+            color: #212529; /* Cor do ícone no Light Mode */
+        }
+        
+    </style>
+</head>
+<body>
+    
+<button id="modeToggle" onclick="toggleDarkMode()">
+    <span id="modeIcon">☀️</span> 
+</button>
+<div class="container">
+    
+    <div class="card shadow-lg main-panel rounded-3">
+        <div class="card-body p-4 p-md-5">
+
+            <h3 class="text-center mb-4 text-primary fw-bold">🛠️ Gerador de Comandos GPS Multi-Protocolo</h3>
+            <p class="text-center mb-5 text-muted">A ferramenta definitiva para configurar **15 dos protocolos** mais utilizados no mercado de rastreamento.</p>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header card-header-custom">
+                    <h4 class="h5 mb-0">Parâmetros Globais</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label for="senha" class="form-label small">Senha (Padrão)</label>
+                            <input type="text" id="senha" class="form-control" value="123456">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="ip" class="form-label small">IP ou DNS</label>
+                            <input type="text" id="ip" class="form-control" value="rastreamento.seuservidor.com">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="porta" class="form-label small">Porta</label>
+                            <input type="number" id="porta" class="form-control" value="6012">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="tempoLigado" class="form-label small">Tempo Ligado (s)</label>
+                            <input type="number" id="tempoLigado" class="form-control" value="60">
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-3">
+                        <div class="col-md-3">
+                            <label for="apnSelect" class="form-label small">Selecione a APN da M2M</label>
+                            <select id="apnSelect" class="form-select" onchange="fillApnFields()">
+                                <option value="">-- Selecione APN --</option>
+                                <option data-user="bws" data-pass="bws" value="bws.br">BWS Infra (bws.br)</option>
+                                <option data-user="vivo" data-pass="vivo" value="zap.vivo.com.br">Vivo Genérica</option>
+                                <option data-user="claro" data-pass="claro" value="generica.claro.com.br">Claro Genérica</option>
+                                <option data-user="allcom" data-pass="allcom" value="allcom.vivo.com.br">Allcom Vivo</option>
+                                <option data-user-apn="allcom" data-pass-apn="allcom" value="allcom.claro.com.br">Allcom Claro</option>
+                                <option data-user-apn="allcom" data-pass-apn="allcom" value="allcom.br">Algar</option>
+                                <option data-user-apn="allcom" data-pass-apn="allcom" value="allcom.arquia.com.br">Arquia</option>
+                                <option data-user-apn="virtu" data-pass-apn="virtu" value="virtueyes.com.br">Virtueyes</option>
+                                <option data-user-apn="tmdata" data-pass-apn="tmdata" value="tmdata.vivo.com.br">Tmdata Vivo</option>
+                                <option data-user-apn="tmdata" data-pass-apn="tmdata" value="tmdata.claro.com.br">Tmdata Claro</option>
+                                <option data-user-apn="tmdata" data-pass-apn="tmdata" value="tmdata.tim.br">Tmdata Tim</option>
+                                <option data-user-apn="link" data-pass-apn="link" value="linksolutions.br">Link / TNS</option>
+                                <option data-user-apn="" data-pass-apn="" value="iot.1nce.net">1NCE</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="apn" class="form-label small">APN (Valor)</label>
+                            <input type="text" id="apn" class="form-control" value="claro.com.br">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="usuario" class="form-label small">Usuário APN</label>
+                            <input type="text" id="usuario" class="form-control" value="claro">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="senhaApn" class="form-label small">Senha APN</label>
+                            <input type="text" id="senhaApn" class="form-control" value="claro">
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-3">
+                            <label for="tempoDesligado" class="form-label small">Tempo Parado (s)</label>
+                            <input type="number" id="tempoDesligado" class="form-control" value="3600">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4 tip-card">
+                <div class="card-header text-white">
+                    <h4 class="h6 mb-0">💡 Dicas Essenciais: Tempo de Envio e Modo Sleep</h4>
+                </div>
+                <div class="card-body">
+                    <p class="small mb-2">A frequência de envio é vital para a bateria. Use os campos acima como referência:</p>
+                    <ul class="small mb-0">
+                        <li>**Tempo Ligado (60s):** Intervalo quando o veículo está **em movimento**.</li>
+                        <li>**Tempo Parado (3600s):** Intervalo quando o veículo está **desligado** (Modo Economia).</li>
+                    </ul>
+                    <p class="small mt-2 mb-0">**Atenção aos Simples (H02, GT02, Apollo, Xexun):** Eles usam **Modo Sleep Automático** ao desligar. Para forçar um ponto, use o comando de localização (`GPS`, `where`, etc.) gerado abaixo.</p>
+                </div>
+            </div>
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="modeloSelect" class="form-label small fw-bold">1. Seleção Rápida (Combobox):</label>
+                            <select id="modeloSelect" class="form-select form-select-lg">
+                                <option value="">-- Selecione um Rastreador --</option>
+                                <option value="concox">Concox / Jimi / CRX (GT06N, J16, CRX3)</option>
+                                <option value="coban">Coban / TK (TK103, TK303)</option>
+                                <option value="queclink">Queclink (GV300, GV50)</option>
+                                <option value="teltonika">Teltonika (FMB920, FMB001)</option>
+                                <option value="sinotrack">Sinotrack (ST-901, ST-907)</option>
+                                <option value="meitrack">Meitrack / Meiligao (MT90, T3)</option>
+                                <option value="gotop">Gotop / Gosafe (GT03, GT08)</option>
+                                <option value="globalsat">GlobalSat (TR-206, TR-600)</option>
+                                <option value="apollo">Apollo (GPS108, GPS305)</option>
+                                <option value="arknav">Arknav (R-33, R-9)</option>
+                                <option value="gt02">FleetMon / GT02 (GPS02)</option>
+                                <option value="xexun">Xexun (TK102/103 Antigo)</option>
+                                <option value="h02">H02 / H2 (iTrack, Mini GPS)</option>
+                                <option value="mt2000">Suntech / Maxtrack (MT2000)</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="modeloInput" class="form-label small fw-bold">2. Pesquisar Modelo (Digite):</label>
+                            <input 
+                                class="form-control form-control-lg" 
+                                list="modelosOpcoes" 
+                                id="modeloInput" 
+                                placeholder="Ou digite o modelo (Ex: H02, FMB920, TK102)"
+                            >
+                            <datalist id="modelosOpcoes">
+                                <option value="concox">Concox / Jimi / CRX (GT06N, J16, CRX3)</option>
+                                <option value="coban">Coban / TK (TK103, TK303)</option>
+                                <option value="queclink">Queclink (GV300, GV50)</option>
+                                <option value="teltonika">Teltonika (FMB920, FMB001)</option>
+                                <option value="sinotrack">Sinotrack (ST-901, ST-907)</option>
+                                <option value="meitrack">Meitrack / Meiligao (MT90, T3)</option>
+                                <option value="gotop">Gotop / Gosafe (GT03, GT08)</option>
+                                <option value="globalsat">GlobalSat (TR-206, TR-600)</option>
+                                <option value="apollo">Apollo (GPS108, GPS305)</option>
+                                <option value="arknav">Arknav (R-33, R-9)</option>
+                                <option value="gt02">FleetMon / GT02 (GPS02)</option>
+                                <option value="xexun">Xexun (TK102/103 Antigo)</option>
+                                <option value="h02">H02 / H2 (iTrack, Mini GPS)</option>
+                                <option value="mt2000">Suntech / Maxtrack (MT2000)</option>
+                            </datalist>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="comandoPainel" class="card shadow" style="display: none;">
+                <div class="card-header text-white" id="panelHeader">
+                    Comandos
+                </div>
+                <div class="card-body">
+                    <button id="copyAllBtn" class="btn btn-warning w-100 mb-3 fw-bold" onclick="copyAllCommands()">
+                        📋 Copiar TODOS os 5 Comandos Essenciais de uma Vez
+                    </button>
+                    
+                    <p class="text-danger small" id="alertaSintaxe" style="display: none;"></p>
+
+                    <div class="row" id="comandosList">
+                        </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="h6 mb-0">⚙️ Ordem de Configuração e Boas Práticas</h4>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-primary small fw-bold">Sequência de Configuração Recomendada (SMS):</h6>
+                    <p class="small">Para garantir que o rastreador se conecte corretamente, siga sempre esta ordem:</p>
+                    <ol class="small">
+                        <li>**1. APN:** Envie o comando de APN. Aguarde a confirmação.</li>
+                        <li>**2. Servidor (IP/Porta):** Envie o comando de IP/DNS. Aguarde a confirmação.</li>
+                        <li>**3. Tempo (Timer):** Envie o comando de Tempo Ligado/Parado.</li>
+                        <li>**Dica Extra:** Após os passos 1 e 2, é bom desligar/ligar o veículo para forçar uma nova conexão.</li>
+                    </ol>
+                    
+                    <h6 class="text-primary mt-3 small fw-bold">O Papel Crucial do IMEI e Senha:</h6>
+                    <p class="small mb-0">Lembre-se que o número **IMEI** (15 dígitos) é o que você deve cadastrar no seu software de rastreio. A **Senha (123456)** é usada apenas para enviar comandos de segurança via SMS para o dispositivo.</p>
+                </div>
+            </div>
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-secondary text-white">
+                    <h4 class="h6 mb-0">📚 Modelos Cobertos por Protocolo (Referência Rápida)</h4>
+                </div>
+                <div class="card-body">
+                    <ul class="reference-list">
+                        <li><strong>Concox / Jimi / CRX:</strong> GT06N, GT06, GT02D, J16, J18, CRX1, CRX3.</li>
+                        <li><strong>Coban / TK:</strong> TK103, TK104, TK303, TK311 (Vários clones).</li>
+                        <li><strong>Queclink:</strong> GL300, GL500, GV300, GV55, GV65.</li>
+                        <li><strong>Teltonika:</strong> FMB920, FMB001, FMU125, FMB120 (Série FMB).</li>
+                        <li><strong>Sinotrack / Auto Leader:</strong> ST-901, ST-902, ST-905, ST-907.</li>
+                        <li><strong>Meitrack / Meiligao:</strong> MT90, T1, T3, T11.</li>
+                        <li><strong>Gotop / Gosafe:</strong> GT03, GT07, GT08, G900.</li>
+                        <li><strong>GlobalSat:</strong> TR-206, TR-600, GV101.</li>
+                        <li><strong>Apollo:</strong> GPS108, GPS305, GPS306.</li>
+                        <li><strong>Arknav:</strong> R-33, R-9.</li>
+                        <li><strong>FleetMon / GT02:</strong> GPS02, G02A.</li>
+                        <li><strong>Xexun:</strong> TK102, TK103 (Modelos mais antigos/originais).</li>
+                        <li><strong>H02 / H2:</strong> H2 Mini GPS, iTrack (Rastreadores de ativos).</li>
+                        <li><strong>Suntech / Maxtrack:</strong> MT2000, ST340 (Comandos legados).</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="text-center mt-4 pt-3 border-top">
+                <p class="text-muted small mb-0">Clique em qualquer comando individual para copiá-lo. Use o botão amarelo para copiar a sequência completa de configuração.</p>
+            </div>
+
+        </div> </div> </div>
+
+<script>
+    // Variável global para armazenar os comandos do protocolo atual
+    let currentCommands = [];
+
+    // --- LÓGICA DO DARK/LIGHT MODE ---
+    const body = document.body;
+    const modeIcon = document.getElementById('modeIcon');
+    const localStorageKey = 'darkModeEnabled';
+
+    function checkDarkModePreference() {
+        const isDarkMode = localStorage.getItem(localStorageKey) === 'true';
+        if (isDarkMode) {
+            body.classList.remove('light-mode');
+            modeIcon.textContent = '☀️'; // Sol para trocar para light
+        } else {
+            body.classList.add('light-mode');
+            modeIcon.textContent = '🌙'; // Lua para trocar para dark
+        }
+    }
+
+    window.toggleDarkMode = function() {
+        const isLightMode = body.classList.contains('light-mode');
+        
+        if (isLightMode) {
+            // Mudar para Dark Mode
+            body.classList.remove('light-mode');
+            localStorage.setItem(localStorageKey, 'true');
+            modeIcon.textContent = '☀️';
+        } else {
+            // Mudar para Light Mode
+            body.classList.add('light-mode');
+            localStorage.setItem(localStorageKey, 'false');
+            modeIcon.textContent = '🌙';
+        }
+    }
+    // --- FIM LÓGICA DARK/LIGHT MODE ---
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Verifica a preferência do usuário ao carregar a página
+        checkDarkModePreference(); 
+
+        const inputs = document.querySelectorAll('input');
+        const modeloSelect = document.getElementById('modeloSelect');
+        const modeloInput = document.getElementById('modeloInput');
+        const comandoPainel = document.getElementById('comandoPainel');
+        const comandosList = document.getElementById('comandosList');
+        const panelHeader = document.getElementById('panelHeader');
+        const alertaSintaxe = document.getElementById('alertaSintaxe');
+        const copyAllBtn = document.getElementById('copyAllBtn'); 
+        
+        // Mapeamento de palavras-chave para o protocolo interno (COMPLETO)
+        const modelMap = {
+            'concox': 'concox', 'jimi': 'concox', 'gt06': 'concox', 'j16': 'concox', 'crx': 'concox', 
+            'coban': 'coban', 'tk103': 'coban', 'tk303': 'coban', 'tk311': 'coban',
+            'queclink': 'queclink', 'gv300': 'queclink', 'gv50': 'queclink', 'gl300': 'queclink',
+            'teltonika': 'teltonika', 'fmb920': 'teltonika', 'fmb001': 'teltonika', 'fmb': 'teltonika',
+            'sinotrack': 'sinotrack', 'st901': 'sinotrack', 'st907': 'sinotrack', 'st': 'sinotrack',
+            'meitrack': 'meitrack', 'meiligao': 'meitrack', 'mt90': 'meitrack', 't1': 'meitrack', 't3': 'meitrack',
+            'gotop': 'gotop', 'gosafe': 'gotop', 'gt03': 'gotop', 'gt08': 'gotop', 'v10': 'gotop',
+            'globalsat': 'globalsat', 'tr206': 'globalsat', 'tr600': 'globalsat', 'gv101': 'globalsat',
+            'apollo': 'apollo', 'gps108': 'apollo', 'gps305': 'apollo',
+            'arknav': 'arknav', 'r33': 'arknav', 'r9': 'arknav',
+            'gt02': 'gt02', 'gps02': 'gt02', 'fleetmon': 'gt02',
+            'xexun': 'xexun', 'tk101': 'xexun', 'tk102b': 'xexun',
+            'h02': 'h02', 'h2': 'h02', 'itrack': 'h02', 
+            'mt2000': 'mt2000', 'maxtrack': 'mt2000', 'suntech': 'mt2000',
+        };
+
+        // Mapeamento de cores para o cabeçalho
+        const colorMap = {
+            'concox': '#28a745', 
+            'coban': '#ffc107',  
+            'queclink': '#dc3545', 
+            'teltonika': '#17a2b8', 
+            'sinotrack': '#fd7e14', 
+            'meitrack': '#6f42c1', 
+            'gotop': '#20c997', 
+            'globalsat': '#6c757d', 
+            'apollo': '#e83e8c', 
+            'arknav': '#ff007f', 
+            'gt02': '#00cccc', 
+            'xexun': '#9933ff', 
+            'h02': '#ff8c00', 
+            'mt2000': '#007bff' 
+        };
+
+        // --- Estrutura de Comandos (COMPLETA) ---
+        const commandTemplates = {
+            // PROTOCOLO 1: CONCOX / JIMI / CRX (GT06)
+            concox: (p) => ({
+                header: 'Concox / Jimi / CRX (GT06N, J16, CRX3) - Protocolo Padrão',
+                alert: 'Sintaxe: COMANDO,PARÂMETROS#. Envie SEMPRE com a **#** no final.',
+                commands: [
+                    { name: '1. Configurar APN', value: `APN,${p.apn},${p.usuario},${p.senhaApn}#` },
+                    { name: '2. Configurar Servidor (IP/DNS)', value: `SERVER,0,${p.ip},${p.porta},0#` },
+                    { name: '3. Configurar Tempo (Ligado/Parado)', value: `TIMER,${p.tLigado},${p.tDesligado}#` },
+                    { name: 'Bloquear Motor', value: `RELAY,1#` },
+                    { name: 'Desbloquear Motor', value: `RELAY,0#` }
+                ]
+            }),
+            // PROTOCOLO 2: COBAN (TK103, TK303)
+            coban: (p) => ({
+                header: 'Coban / TK (TK103B, TK303) - Requer Senha',
+                alert: `Sintaxe: COMANDO${p.senha} PARÂMETROS. **Todos os comandos requerem a senha (${p.senha})**`,
+                commands: [
+                    { name: '1a. Configurar APN (Versão Curta)', value: `apn${p.senha} ${p.apn}` },
+                    { name: '1b. Configurar APN (Versão Completa)', value: `apn${p.senha} ${p.apn} ${p.usuario} ${p.senhaApn}` },
+                    { name: '2. Configurar Servidor (IP)', value: `adminip${p.senha} ${p.ip} ${p.porta}` },
+                    { name: '3. Configurar Tempo (Ligado/Parado)', value: `fix${p.tLigado}s${p.tDesligado}s***n${p.senha}` },
+                    { name: 'Bloquear', value: `stop${p.senha}` },
+                    { name: 'Desbloquear', value: `resume${p.senha}` }
+                ]
+            }),
+            // PROTOCOLO 3: QUECLINK (GV300)
+            queclink: (p) => ({
+                header: 'Queclink (GV300, GV50) - Protocolo AT',
+                alert: 'Sintaxe: AT+COMANDO=gv300,PARÂMETROS,FFFF$. **Altamente dependente do firmware.**',
+                commands: [
+                    { name: '1. Configurar APN', value: `AT+GTBSI=gv300,${p.apn},${p.usuario},${p.senhaApn},,,,,FFFF$` },
+                    { name: '2. Configurar Servidor (IP)', value: `AT+GTSRI=gv300,4,,2,${p.ip},${p.porta},,,,0,0,0,1,,,FFFF$` },
+                    { name: '3. Configurar Tempo (Ligado/Parado)', value: `AT+GTFRI=gv300,1,0,,0,0000,0000,,${p.tLigado},${p.tDesligado},,,,,,FFFF$` },
+                    { name: 'Bloquear (Saída 1)', value: `AT+GTOUT=gv300,1,0,0,0,0,0,,,,0,,,,,,,FFFF$` },
+                    { name: 'Desbloquear (Saída 1)', value: `AT+GTOUT=gv300,0,0,0,0,0,0,,,,0,,,,,,,FFFF$` }
+                ]
+            }),
+             // PROTOCOLO 4: TELTONIKA (FMB920)
+            teltonika: (p) => ({
+                header: 'Teltonika (FMB920, FMB001) - Protocolo AT',
+                alert: 'Sintaxe: COMANDO,PARÂMETROS. Use um ponto de exclamação "!" antes do comando para enviá-lo via GPRS. (Ex: `!apn`)',
+                commands: [
+                    { name: '1. Configurar APN', value: `setparam 2001:${p.apn};2002:${p.usuario};2003:${p.senhaApn}` },
+                    { name: '2. Configurar Servidor (IP)', value: `setparam 6001:${p.ip};6002:${p.porta}` },
+                    { name: '3. Configurar Tempo (Ligado - 1000s)', value: `setparam 102:${p.tLigado}` },
+                    { name: '4. Configurar Tempo (Parado - 1000s)', value: `setparam 104:${p.tDesligado}` },
+                    { name: 'Bloquear Motor (Output 1)', value: `setdigout 10` },
+                    { name: 'Desbloquear Motor (Output 1)', value: `setdigout 11` }
+                ]
+            }),
+            // PROTOCOLO 5: SINOTRACK / AUTO LEADER (ST-901)
+            sinotrack: (p) => ({
+                header: 'Sinotrack (ST-901, ST-907) - Requer Senha',
+                alert: `Sintaxe: COMANDO# ou COMANDO,${p.senha} PARÂMETROS#. **A # é crucial.**`,
+                commands: [
+                    { name: '1. Configurar APN', value: `APN,${p.senha},${p.apn},${p.usuario},${p.senhaApn}` },
+                    { name: '2. Configurar Servidor (IP)', value: `IP,${p.senha},${p.ip},${p.porta}` },
+                    { name: '3. Configurar Tempo (Ligado)', value: `TIMER,${p.senha},${p.tLigado}` },
+                    { name: 'Bloquear', value: `STOP${p.senha}` },
+                    { name: 'Desbloquear', value: `RESUME${p.senha}` }
+                ]
+            }),
+             // PROTOCOLO 6: MEITRACK / MEILIGAO (MT90, T3)
+            meitrack: (p) => ({
+                header: 'Meitrack / Meiligao (MT90, T1, T3) - Requer Senha',
+                alert: `Sintaxe: **[ID],COMANDO,PARÂMETROS** (O ID geralmente é o IMEI). Use a senha ${p.senha} nos comandos abaixo.`,
+                commands: [
+                    { name: '1. Configurar APN', value: `AT+APN=${p.apn},${p.usuario},${p.senhaApn}` },
+                    { name: '2. Configurar Servidor (IP/Porta)', value: `AT+SOCKA=${p.ip},${p.porta},1` },
+                    { name: '3. Configurar Tempo (Ligado)', value: `AT+BUFF=0,${p.tLigado}` },
+                    { name: '4. Configurar Tempo (Parado)', value: `AT+BUFF=1,${p.tDesligado}` },
+                    { name: 'Bloquear Motor', value: `RELAY,${p.senha},1` },
+                    { name: 'Desbloquear Motor', value: `RELAY,${p.senha},0` }
+                ]
+            }),
+            // PROTOCOLO 7: GOTOP / GOSAFE (GT03, GT08)
+            gotop: (p) => ({
+                header: 'Gotop / Gosafe (GT03, GT08) - Requer ID ou IMEI',
+                alert: `Sintaxe: **[ID/IMEI] APN,${p.apn},${p.usuario},${p.senhaApn}** (substitua o ID/IMEI).`,
+                commands: [
+                    { name: '1. Configurar APN', value: `APN,${p.apn},${p.usuario},${p.senhaApn}` },
+                    { name: '2. Configurar Servidor (IP/DNS)', value: `SERVER,${p.ip},${p.porta},,1` },
+                    { name: '3. Configurar Tempo (Ligado)', value: `GPRS,${p.tLigado}` },
+                    { name: '4. Configurar Tempo (Parado)', value: `GPRSSLEEP,${p.tDesligado}` },
+                    { name: 'Bloquear (Saída 1)', value: `GTOUT,1,1` },
+                    { name: 'Desbloquear (Saída 1)', value: `GTOUT,1,0` }
+                ]
+            }),
+            // PROTOCOLO 8: GLOBALSAT (TR-206, TR-600)
+            globalsat: (p) => ({
+                header: 'GlobalSat (TR-206, TR-600) - Protocolo Padrão',
+                alert: 'Sintaxe: **\\*MSG,COMANDO,PARÂMETROS#** (Os comandos costumam ter o prefixo *MSG)',
+                commands: [
+                    { name: '1. Configurar APN', value: `*MSG,APN,${p.apn},${p.usuario},${p.senhaApn}#` },
+                    { name: '2. Configurar Servidor (IP/Porta)', value: `*MSG,HOST,${p.ip},${p.porta}#` },
+                    { name: '3. Configurar Tempo (Ligado/Parado)', value: `*MSG,TIMER,${p.tLigado},${p.tDesligado}#` },
+                    { name: 'Reiniciar Dispositivo', value: `*MSG,RESET#` },
+                    { name: 'Bloquear Motor', value: `*MSG,RELAY,1#` }
+                ]
+            }),
+            // PROTOCOLO 9: APOLLO (GPS108, GPS305)
+            apollo: (p) => ({
+                header: 'Apollo (GPS108, GPS305) - Protocolo Padrão',
+                alert: `Sintaxe: COMANDO. **IP/Porta não requerem a senha ${p.senha}.**`,
+                commands: [
+                    { name: '1. Configurar APN', value: `apn${p.senha} ${p.apn} ${p.usuario} ${p.senhaApn}` },
+                    { name: '2. Configurar Servidor (IP)', value: `adminip ${p.ip} ${p.porta}` },
+                    { name: '3. Configurar Tempo (Ligado)', value: `upload${p.senha},${p.tLigado}` },
+                    { name: '4. Configurar Modo GPRS', value: `gprs${p.senha}` },
+                    { name: '5. Solicitar Posição (Acordar)', value: `g${p.senha}` },
+                    { name: 'Bloquear', value: `stop${p.senha}` },
+                    { name: 'Desbloquear', value: `resume${p.senha}` }
+                ]
+            }),
+            // PROTOCOLO 10: ARKNAV (R-33, R-9)
+            arknav: (p) => ({
+                header: 'Arknav (R-33, R-9) - Protocolo AT',
+                alert: 'Sintaxe: **(COMANDO)**. O rastreador deve estar com o SIM Card previamente cadastrado.',
+                commands: [
+                    { name: '1. Configurar APN', value: `(APN,${p.apn},${p.usuario},${p.senhaApn})` },
+                    { name: '2. Configurar Servidor (IP/Porta)', value: `(HOST,${p.ip},${p.porta})` },
+                    { name: '3. Configurar Tempo (Ligado)', value: `(UPLOAD,${p.tLigado})` },
+                    { name: 'Bloquear Motor', value: `(RELAY,1)` },
+                    { name: 'Desbloquear Motor', value: `(RELAY,0)` }
+                ]
+            }),
+            // PROTOCOLO 11: FLEETMON / GT02 (GPS02)
+            gt02: (p) => ({
+                header: 'FleetMon / GT02 (GPS02) - Sem Senha (Mais simples)',
+                alert: 'Sintaxe: COMANDO PARÂMETROS. **Comandos simples, mas alguns modelos podem exigir senha.**',
+                commands: [
+                    { name: '1. Configurar APN', value: `apn ${p.apn}` },
+                    { name: '2. Configurar Usuário/Senha APN', value: `up ${p.usuario} ${p.senhaApn}` },
+                    { name: '3. Configurar Servidor (IP)', value: `adminip ${p.ip} ${p.porta}` },
+                    { name: '4. Configurar Tempo (Ligado)', value: `timer ${p.tLigado}` },
+                    { name: '5. Solicitar Posição (Acordar)', value: `url` },
+                    { name: 'Bloquear', value: `stop` },
+                    { name: 'Desbloquear', value: `resume` }
+                ]
+            }),
+            // PROTOCOLO 12: XEXUN (TK102, TK103 - Antigo)
+            xexun: (p) => ({
+                header: 'Xexun (TK102, TK103 - Antigo) - Protocolo Simples',
+                alert: `Sintaxe: **COMANDO#**. Muitos comandos usam apenas o # no final.`,
+                commands: [
+                    { name: '1. Configurar APN', value: `apn,${p.apn},${p.usuario},${p.senhaApn}` },
+                    { name: '2. Configurar Servidor (IP)', value: `adminip,${p.ip},${p.porta}` },
+                    { name: '3. Configurar Tempo (Ligado)', value: `timer,${p.tLigado}` },
+                    { name: '4. Resetar Configurações', value: `format` },
+                    { name: '5. Solicitar Posição (Acordar)', value: `position` },
+                    { name: 'Bloquear', value: `stop` },
+                    { name: 'Desbloquear', value: `resume` }
+                ]
+            }),
+            // PROTOCOLO 13: H02 / H2 (iTrack, Mini GPS)
+            h02: (p) => ({
+                header: 'H02 / H2 (iTrack, Mini GPS) - Protocolo de Ativos',
+                alert: `Sintaxe: **GPRS,1,${p.ip},${p.porta}** (Sem senha na maioria das vezes).`,
+                commands: [
+                    { name: '1. Configurar APN', value: `APN,${p.apn},${p.usuario},${p.senhaApn}` },
+                    { name: '2. Configurar Servidor (IP/Porta)', value: `GPRS,1,${p.ip},${p.porta}` },
+                    { name: '3. Configurar Tempo (Ligado)', value: `TIME,${p.tLigado}` },
+                    { name: '4. Configurar Modo GPRS', value: `MODE,GPRS` },
+                    { name: '5. Solicitar Posição (Acordar)', value: `GPS` },
+                    { name: 'Resetar/Reiniciar', value: `RESET` }
+                ]
+            }),
+            // PROTOCOLO 14: SUNTECH / MAXTRACK (MT2000)
+            mt2000: (p) => ({
+                header: 'Suntech / Maxtrack (MT2000) - Sintaxe Variável',
+                alert: 'AVISO: Sintaxe varia muito por firmware. Estes são comandos comuns (Ex: Suntech/MTXT).',
+                commands: [
+                    { name: 'Configurar APN', value: `AS${p.senha}*APN:${p.apn},${p.usuario},${p.senhaApn}#` },
+                    { name: 'Configurar Servidor', value: `AS${p.senha}*SERVER:${p.ip},${p.porta},0#` },
+                    { name: 'Configurar Tempo (Ligado/Parado)', value: `AS${p.senha}*269#7,${p.tLigado},${p.tDesligado},#` },
+                    { name: 'Localização', value: `POS#` },
+                    { name: 'Bloquear', value: `AS${p.senha}*RELAY:0,1#` },
+                    { name: 'Desbloquear', value: `AS${p.senha}*RELAY:0,0#` }
+                ]
+            })
+        };
+
+        // --- Funções de Lógica ---
+
+        window.getParameters = function() {
+            return {
+                senha: document.getElementById('senha').value.trim(),
+                ip: document.getElementById('ip').value.trim(),
+                porta: document.getElementById('porta').value.trim(),
+                apn: document.getElementById('apn').value.trim(),
+                usuario: document.getElementById('usuario').value.trim(),
+                senhaApn: document.getElementById('senhaApn').value.trim(),
+                tLigado: document.getElementById('tempoLigado').value.trim() || '60',
+                tDesligado: document.getElementById('tempoDesligado').value.trim() || '3600'
+            };
+        }
+        
+        window.fillApnFields = function() {
+            const select = document.getElementById('apnSelect');
+            const selectedOption = select.options[select.selectedIndex];
+            
+            const apnValue = selectedOption.value;
+            const userApn = selectedOption.getAttribute('data-user') || selectedOption.getAttribute('data-user-apn') || '';
+            const passApn = selectedOption.getAttribute('data-pass') || selectedOption.getAttribute('data-pass-apn') || '';
+
+            document.getElementById('apn').value = apnValue;
+            document.getElementById('usuario').value = userApn;
+            document.getElementById('senhaApn').value = passApn;
+            
+            displayCommands('parameters');
+        }
+
+        function getProtocolKey(modelText) {
+            if (!modelText) return null;
+            const normalizedText = modelText.toLowerCase().replace(/[^a-z0-9]/g, '');
+            
+            if (commandTemplates[modelText]) {
+                return modelText;
+            }
+
+            for (const [key, protocol] of Object.entries(modelMap)) {
+                if (normalizedText.includes(key) && key.length >= 2) { 
+                    return protocol;
+                }
+            }
+            return null;
+        }
+
+        function displayCommands(source = null) {
+            let selectedProtocol = null;
+
+            if (source === 'select') {
+                selectedProtocol = modeloSelect.value;
+                modeloInput.value = ''; 
+            } else if (source === 'input') {
+                selectedProtocol = getProtocolKey(modeloInput.value);
+                modeloSelect.value = ''; 
+            } else {
+                 selectedProtocol = modeloSelect.value || getProtocolKey(modeloInput.value);
+            }
+
+            if (!selectedProtocol) {
+                comandoPainel.style.display = 'none';
+                return;
+            }
+
+            const params = getParameters();
+            const data = commandTemplates[selectedProtocol](params);
+
+            currentCommands = data.commands;
+
+            panelHeader.textContent = data.header;
+            panelHeader.style.backgroundColor = colorMap[selectedProtocol] || '#343a40';
+            
+            alertaSintaxe.textContent = data.alert;
+            alertaSintaxe.style.display = data.alert ? 'block' : 'none';
+
+            comandosList.innerHTML = '';
+            data.commands.forEach(cmd => {
+                const col = document.createElement('div');
+                if (cmd.name.includes('(Acordar)') || cmd.name.includes('Reiniciar') || cmd.name.includes('(Versão Completa)')) {
+                    col.className = 'col-md-12 mb-3';
+                } else {
+                    col.className = 'col-md-6 mb-3';
+                }
+                
+                col.innerHTML = `
+                    <p class="mb-0 small fw-bold">${cmd.name}:</p>
+                    <div class="comando-box">${cmd.value}</div>
+                `;
+                comandosList.appendChild(col);
+            });
+
+            const essentialCommands = currentCommands.filter(cmd => 
+                cmd.name.match(/^[0-9]\./) || 
+                cmd.name.includes('Bloquear') || 
+                cmd.name.includes('Desbloquear')
+            );
+            copyAllBtn.textContent = `📋 Copiar TODOS os ${essentialCommands.length} Comandos Essenciais de uma Vez`;
+            
+            attachCopyListeners();
+            comandoPainel.style.display = 'block';
+        }
+
+        function attachCopyListeners() {
+            document.querySelectorAll('.comando-box').forEach(box => {
+                box.onclick = copyHandler;
+            });
+        }
+        
+        function copyHandler(event) {
+            const text = event.target.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const originalColor = window.getComputedStyle(event.target).backgroundColor;
+                event.target.style.backgroundColor = '#28a745'; /* Verde */
+                setTimeout(() => {
+                    event.target.style.backgroundColor = originalColor; // Volta para a cor original
+                }, 500);
+            }).catch(err => {
+                alert('Erro ao copiar. Tente selecionar o texto manualmente.');
+            });
+        }
+        
+        window.copyAllCommands = function() {
+            if (currentCommands.length === 0) {
+                alert("Nenhum comando gerado para copiar.");
+                return;
+            }
+            
+            const essentialCommands = currentCommands.filter(cmd => 
+                (cmd.name.match(/^[0-9]\./) && !cmd.name.includes('Versão Completa')) || 
+                cmd.name.includes('Bloquear') || 
+                cmd.name.includes('Desbloquear')
+            );
+
+            const allCommandsText = essentialCommands
+                .map(cmd => cmd.value)
+                .join('\n'); 
+
+            navigator.clipboard.writeText(allCommandsText).then(() => {
+                copyAllBtn.textContent = '✅ COMANDOS COPIADOS! (Cole no seu bloco de notas)';
+                copyAllBtn.classList.remove('btn-warning');
+                copyAllBtn.classList.add('btn-success');
+                
+                setTimeout(() => {
+                     const essentialCount = currentCommands.filter(cmd => 
+                        cmd.name.match(/^[0-9]\./) || 
+                        cmd.name.includes('Bloquear') || 
+                        cmd.name.includes('Desbloquear')
+                    ).length;
+                    copyAllBtn.textContent = `📋 Copiar TODOS os ${essentialCount} Comandos Essenciais de uma Vez`;
+                    copyAllBtn.classList.remove('btn-success');
+                    copyAllBtn.classList.add('btn-warning');
+                }, 2000);
+            }).catch(err => {
+                alert('Erro ao copiar. Tente novamente.');
+            });
+        }
+
+        // --- Event Listeners ---
+        modeloSelect.addEventListener('change', () => displayCommands('select'));
+        modeloInput.addEventListener('input', () => displayCommands('input'));
+        inputs.forEach(input => {
+            if (input.id !== 'apnSelect') {
+                input.addEventListener('input', () => displayCommands('parameters'));
+            }
+        });
+
+        displayCommands();
+    });
+</script>
+
+</body>
+</html>
