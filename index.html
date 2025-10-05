@@ -421,7 +421,7 @@
             'mt2000': '#007bff' 
         };
 
-        // --- Estrutura de Comandos (COMPLETA) ---
+        // --- Estrutura de Comandos (ATUALIZADA) ---
         const commandTemplates = {
             // PROTOCOLO 1: CONCOX / JIMI / CRX (GT06)
             concox: (p) => ({
@@ -432,7 +432,8 @@
                     { name: '2. Configurar Servidor (IP/DNS)', value: `SERVER,0,${p.ip},${p.porta},0#` },
                     { name: '3. Configurar Tempo (Ligado/Parado)', value: `TIMER,${p.tLigado},${p.tDesligado}#` },
                     { name: 'Bloquear Motor', value: `RELAY,1#` },
-                    { name: 'Desbloquear Motor', value: `RELAY,0#` }
+                    { name: 'Desbloquear Motor', value: `RELAY,0#` },
+                    { name: 'Reiniciar Dispositivo', value: `RESET#` } // COMANDO ADICIONADO
                 ]
             }),
             // PROTOCOLO 2: COBAN (TK103, TK303)
@@ -445,7 +446,8 @@
                     { name: '2. Configurar Servidor (IP)', value: `adminip${p.senha} ${p.ip} ${p.porta}` },
                     { name: '3. Configurar Tempo (Ligado/Parado)', value: `fix${p.tLigado}s${p.tDesligado}s***n${p.senha}` },
                     { name: 'Bloquear', value: `stop${p.senha}` },
-                    { name: 'Desbloquear', value: `resume${p.senha}` }
+                    { name: 'Desbloquear', value: `resume${p.senha}` },
+                    { name: 'Reiniciar Dispositivo', value: `reset${p.senha}` } // COMANDO ADICIONADO
                 ]
             }),
             // PROTOCOLO 3: QUECLINK (GV300)
@@ -457,7 +459,8 @@
                     { name: '2. Configurar Servidor (IP)', value: `AT+GTSRI=gv300,4,,2,${p.ip},${p.porta},,,,0,0,0,1,,,FFFF$` },
                     { name: '3. Configurar Tempo (Ligado/Parado)', value: `AT+GTFRI=gv300,1,0,,0,0000,0000,,${p.tLigado},${p.tDesligado},,,,,,FFFF$` },
                     { name: 'Bloquear (Saída 1)', value: `AT+GTOUT=gv300,1,0,0,0,0,0,,,,0,,,,,,,FFFF$` },
-                    { name: 'Desbloquear (Saída 1)', value: `AT+GTOUT=gv300,0,0,0,0,0,0,,,,0,,,,,,,FFFF$` }
+                    { name: 'Desbloquear (Saída 1)', value: `AT+GTOUT=gv300,0,0,0,0,0,0,,,,0,,,,,,,FFFF$` },
+                    { name: 'Reiniciar Dispositivo', value: `AT+GTRST=gv300,FFFF$` } // COMANDO ADICIONADO
                 ]
             }),
              // PROTOCOLO 4: TELTONIKA (FMB920)
@@ -470,7 +473,8 @@
                     { name: '3. Configurar Tempo (Ligado - 1000s)', value: `setparam 102:${p.tLigado}` },
                     { name: '4. Configurar Tempo (Parado - 1000s)', value: `setparam 104:${p.tDesligado}` },
                     { name: 'Bloquear Motor (Output 1)', value: `setdigout 10` },
-                    { name: 'Desbloquear Motor (Output 1)', value: `setdigout 11` }
+                    { name: 'Desbloquear Motor (Output 1)', value: `setdigout 11` },
+                    { name: 'Reiniciar Dispositivo', value: `reboot` } // COMANDO ADICIONADO
                 ]
             }),
             // PROTOCOLO 5: SINOTRACK / AUTO LEADER (ST-901)
@@ -482,7 +486,8 @@
                     { name: '2. Configurar Servidor (IP)', value: `IP,${p.senha},${p.ip},${p.porta}` },
                     { name: '3. Configurar Tempo (Ligado)', value: `TIMER,${p.senha},${p.tLigado}` },
                     { name: 'Bloquear', value: `STOP${p.senha}` },
-                    { name: 'Desbloquear', value: `RESUME${p.senha}` }
+                    { name: 'Desbloquear', value: `RESUME${p.senha}` },
+                    { name: 'Reiniciar Dispositivo', value: `RESTART${p.senha}` } // COMANDO ADICIONADO
                 ]
             }),
              // PROTOCOLO 6: MEITRACK / MEILIGAO (MT90, T3)
@@ -495,7 +500,8 @@
                     { name: '3. Configurar Tempo (Ligado)', value: `AT+BUFF=0,${p.tLigado}` },
                     { name: '4. Configurar Tempo (Parado)', value: `AT+BUFF=1,${p.tDesligado}` },
                     { name: 'Bloquear Motor', value: `RELAY,${p.senha},1` },
-                    { name: 'Desbloquear Motor', value: `RELAY,${p.senha},0` }
+                    { name: 'Desbloquear Motor', value: `RELAY,${p.senha},0` },
+                    { name: 'Reiniciar Dispositivo', value: `AT+GTRST` } // COMANDO ADICIONADO
                 ]
             }),
             // PROTOCOLO 7: GOTOP / GOSAFE (GT03, GT08)
@@ -508,7 +514,8 @@
                     { name: '3. Configurar Tempo (Ligado)', value: `GPRS,${p.tLigado}` },
                     { name: '4. Configurar Tempo (Parado)', value: `GPRSSLEEP,${p.tDesligado}` },
                     { name: 'Bloquear (Saída 1)', value: `GTOUT,1,1` },
-                    { name: 'Desbloquear (Saída 1)', value: `GTOUT,1,0` }
+                    { name: 'Desbloquear (Saída 1)', value: `GTOUT,1,0` },
+                    { name: 'Reiniciar Dispositivo', value: `RESET` } // COMANDO ADICIONADO
                 ]
             }),
             // PROTOCOLO 8: GLOBALSAT (TR-206, TR-600)
@@ -519,8 +526,10 @@
                     { name: '1. Configurar APN', value: `*MSG,APN,${p.apn},${p.usuario},${p.senhaApn}#` },
                     { name: '2. Configurar Servidor (IP/Porta)', value: `*MSG,HOST,${p.ip},${p.porta}#` },
                     { name: '3. Configurar Tempo (Ligado/Parado)', value: `*MSG,TIMER,${p.tLigado},${p.tDesligado}#` },
-                    { name: 'Reiniciar Dispositivo', value: `*MSG,RESET#` },
-                    { name: 'Bloquear Motor', value: `*MSG,RELAY,1#` }
+                    { name: 'Bloquear Motor', value: `*MSG,RELAY,1#` },
+                    { name: 'Desbloquear Motor', value: `*MSG,RELAY,0#` },
+                    { name: 'Reiniciar Dispositivo (Opção 1)', value: `*MSG,REBOOT#` }, // COMANDO ADICIONADO
+                    { name: 'Reiniciar Dispositivo (Opção 2)', value: `*MSG,RESET#` }  // COMANDO ADICIONADO
                 ]
             }),
             // PROTOCOLO 9: APOLLO (GPS108, GPS305)
@@ -534,7 +543,8 @@
                     { name: '4. Configurar Modo GPRS', value: `gprs${p.senha}` },
                     { name: '5. Solicitar Posição (Acordar)', value: `g${p.senha}` },
                     { name: 'Bloquear', value: `stop${p.senha}` },
-                    { name: 'Desbloquear', value: `resume${p.senha}` }
+                    { name: 'Desbloquear', value: `resume${p.senha}` },
+                    { name: 'Reiniciar Dispositivo', value: `reset${p.senha}` } // COMANDO ADICIONADO
                 ]
             }),
             // PROTOCOLO 10: ARKNAV (R-33, R-9)
@@ -546,7 +556,8 @@
                     { name: '2. Configurar Servidor (IP/Porta)', value: `(HOST,${p.ip},${p.porta})` },
                     { name: '3. Configurar Tempo (Ligado)', value: `(UPLOAD,${p.tLigado})` },
                     { name: 'Bloquear Motor', value: `(RELAY,1)` },
-                    { name: 'Desbloquear Motor', value: `(RELAY,0)` }
+                    { name: 'Desbloquear Motor', value: `(RELAY,0)` },
+                    { name: 'Reiniciar Dispositivo', value: `(RESET)` } // COMANDO ADICIONADO
                 ]
             }),
             // PROTOCOLO 11: FLEETMON / GT02 (GPS02)
@@ -560,7 +571,8 @@
                     { name: '4. Configurar Tempo (Ligado)', value: `timer ${p.tLigado}` },
                     { name: '5. Solicitar Posição (Acordar)', value: `url` },
                     { name: 'Bloquear', value: `stop` },
-                    { name: 'Desbloquear', value: `resume` }
+                    { name: 'Desbloquear', value: `resume` },
+                    { name: 'Reiniciar Dispositivo', value: `reset` } // COMANDO ADICIONADO
                 ]
             }),
             // PROTOCOLO 12: XEXUN (TK102, TK103 - Antigo)
@@ -574,7 +586,8 @@
                     { name: '4. Resetar Configurações', value: `format` },
                     { name: '5. Solicitar Posição (Acordar)', value: `position` },
                     { name: 'Bloquear', value: `stop` },
-                    { name: 'Desbloquear', value: `resume` }
+                    { name: 'Desbloquear', value: `resume` },
+                    { name: 'Reiniciar Dispositivo', value: `reset${p.senha}` } // COMANDO ADICIONADO
                 ]
             }),
             // PROTOCOLO 13: H02 / H2 (iTrack, Mini GPS)
@@ -587,13 +600,13 @@
                     { name: '3. Configurar Tempo (Ligado)', value: `TIME,${p.tLigado}` },
                     { name: '4. Configurar Modo GPRS', value: `MODE,GPRS` },
                     { name: '5. Solicitar Posição (Acordar)', value: `GPS` },
-                    { name: 'Resetar/Reiniciar', value: `RESET` }
+                    { name: 'Reiniciar Dispositivo', value: `RESET` } // COMANDO ADICIONADO
                 ]
             }),
             // PROTOCOLO 14: SUNTECH / MAXTRACK (MT2000)
             mt2000: (p) => ({
                 header: 'Suntech / Maxtrack (MT2000) - Sintaxe Variável',
-                alert: 'AVISO: Sintaxe varia muito por firmware. Estes são comandos comuns (Ex: Suntech/MTXT).',
+                alert: 'AVISO: Sintaxe varia muito por firmware. Não existe um comando de Reinício/Reset universalmente documentado via SMS para a maioria dos modelos Suntech.',
                 commands: [
                     { name: 'Configurar APN', value: `AS${p.senha}*APN:${p.apn},${p.usuario},${p.senhaApn}#` },
                     { name: 'Configurar Servidor', value: `AS${p.senha}*SERVER:${p.ip},${p.porta},0#` },
@@ -683,7 +696,8 @@
             comandosList.innerHTML = '';
             data.commands.forEach(cmd => {
                 const col = document.createElement('div');
-                if (cmd.name.includes('(Acordar)') || cmd.name.includes('Reiniciar') || cmd.name.includes('(Versão Completa)')) {
+                // Altera o layout para comandos menos comuns ou de linha única
+                if (cmd.name.includes('Reiniciar') || cmd.name.includes('(Acordar)') || cmd.name.includes('(Versão Completa)')) {
                     col.className = 'col-md-12 mb-3';
                 } else {
                     col.className = 'col-md-6 mb-3';
@@ -732,6 +746,7 @@
                 return;
             }
             
+            // Filtra os comandos essenciais (configuração 1, 2, 3 e Bloqueio/Desbloqueio)
             const essentialCommands = currentCommands.filter(cmd => 
                 (cmd.name.match(/^[0-9]\./) && !cmd.name.includes('Versão Completa')) || 
                 cmd.name.includes('Bloquear') || 
@@ -749,10 +764,10 @@
                 
                 setTimeout(() => {
                      const essentialCount = currentCommands.filter(cmd => 
-                        cmd.name.match(/^[0-9]\./) || 
-                        cmd.name.includes('Bloquear') || 
-                        cmd.name.includes('Desbloquear')
-                    ).length;
+                         cmd.name.match(/^[0-9]\./) || 
+                         cmd.name.includes('Bloquear') || 
+                         cmd.name.includes('Desbloquear')
+                     ).length;
                     copyAllBtn.textContent = `📋 Copiar TODOS os ${essentialCount} Comandos Essenciais de uma Vez`;
                     copyAllBtn.classList.remove('btn-success');
                     copyAllBtn.classList.add('btn-warning');
